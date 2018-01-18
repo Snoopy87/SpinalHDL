@@ -1497,11 +1497,25 @@ object PlayWithSM_GenDataForGUI {
   def main(args: Array[String]): Unit = {
     val report = SpinalVhdl(new Toplevel)
 
+    import spinal.core.internals.WhenStatement
+
+    println("\n" * 2)
 
 
     report.toplevel.sm.guiInfo.transition.foreach(println)
 
-    println("")
+//    println("hgkkhhj")
+//
+//    report.toplevel.sm.guiInfo.transition.foreach{ case trans =>
+//      println(trans)
+//        trans.scope.parentStatement match{
+//          case x : WhenStatement => println(report.toplevel.sm.dispatchExpression(x.cond))
+//                case _ =>
+//        }
+//
+//    }
+
+
 
 
   }

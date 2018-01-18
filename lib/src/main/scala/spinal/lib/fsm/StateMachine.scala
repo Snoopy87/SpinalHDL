@@ -57,8 +57,18 @@ class StateMachineEnum extends SpinalEnum
 class StateMachine extends Area with StateMachineAccessor with ScalaLocated {
 
   // GUI
-  case class GUI_Transition(start: State, end: State, condition: Expression){
-    override def toString: String = s"${start} -> ${end}"
+  case class GUI_Transition(start: State, end: State, scope: ScopeStatement){
+
+    def condition : String = {
+        scope.parentStatement match{
+          case x : WhenStatement if scope == x.whenTrue  => dispatchExpression(x.cond)
+          case x : WhenStatement if scope == x.whenFalse => s"!(${dispatchExpression(x.cond)})"
+          case _ => " ?? "
+        }
+    }
+
+
+    override def toString: String = s"${start} - ${condition}-> ${end}"
   }
   case class GUI_Info(
                      transition: ArrayBuffer[GUI_Transition] = new ArrayBuffer[GUI_Transition]()
@@ -190,20 +200,20 @@ class StateMachine extends Area with StateMachineAccessor with ScalaLocated {
 
     // Get the current scope
     val currentScope = GlobalData.get.currentScope
-    var expression : Expression = null
+//    var expression : Expression = null
+//
+//    currentScope.parentStatement match {
+//      case x : WhenStatement if currentScope == x.whenTrue  =>
+////        println("-----> " + dispatchExpression(x.cond))
+//        expression = x.cond
+//      case x : WhenStatement if currentScope == x.whenFalse  =>
+////        println(dispatchExpression(x.cond))
+//        expression = x.cond
+//      case _ =>
+//    }
 
-    currentScope.parentStatement match {
-      case x : WhenStatement if currentScope == x.whenTrue  =>
-//        println("-----> " + dispatchExpression(x.cond))
-        expression = x.cond
-      case x : WhenStatement if currentScope == x.whenFalse  =>
-//        println(dispatchExpression(x.cond))
-        expression = x.cond
-      case _ =>
-    }
 
-
-    guiInfo.transition += GUI_Transition(currentState, nextState, expression)
+    guiInfo.transition += GUI_Transition(currentState, nextState, currentScope)
   }
 
   override def isActive(state: State): Bool = {
@@ -261,7 +271,7 @@ class StateMachine extends Area with StateMachineAccessor with ScalaLocated {
   override def isStateRegBoot():  Bool = stateReg === enumOf(stateBoot)
 
   // GUI WIP
-  private def dispatchExpression(e: Expression):  String = e match {
+  def dispatchExpression(e: Expression):  String = e match {
 
     case  e: BaseType                                => s"${e.getName()}"
 
