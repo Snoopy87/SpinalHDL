@@ -97,11 +97,11 @@ class State(implicit stateMachineAccessor: StateMachineAccessor) extends Area wi
     this
   }
 
-  def goto(state: State) = stateMachineAccessor.goto(state)
+  def goto(nextState: State) = stateMachineAccessor.goto(nextState, this)
 
   def innerFsm(that: => StateMachine): Unit = innerFsm += that
 
-  def exit(): Unit = stateMachineAccessor.exitFsm()
+  def exit(): Unit = stateMachineAccessor.exitFsm(null)
 
   def getStateMachineAccessor() = stateMachineAccessor
 
@@ -117,7 +117,7 @@ class State(implicit stateMachineAccessor: StateMachineAccessor) extends Area wi
 class StateFsm[T <: StateMachineAccessor](val fsm:  T)(implicit stateMachineAccessor: StateMachineAccessor) extends State with StateCompletionTrait {
 
   onEntry{
-    fsm.startFsm()
+    fsm.startFsm(this)
   }
 
   whenIsActive{
@@ -161,7 +161,7 @@ object StatesSerialFsm {
 class StateParallelFsm(val fsms: StateMachineAccessor*)(implicit stateMachineAccessor: StateMachineAccessor) extends State with StateCompletionTrait {
 
   onEntry{
-    fsms.foreach(_.startFsm())
+    fsms.foreach(_.startFsm(this))
   }
 
   whenIsActive{
@@ -235,7 +235,7 @@ class StateDelay(cyclesCount: UInt)(implicit stateMachineAccessor: StateMachineA
 class StateBoot(autoStart: Boolean)(implicit stateMachineAccessor: StateMachineAccessor) extends State {
   if(autoStart) {
     whenIsActive {
-      stateMachineAccessor.startFsm()
+      stateMachineAccessor.startFsm(this)
     }
   }
 }

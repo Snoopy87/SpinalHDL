@@ -35,13 +35,13 @@ trait StateMachineAccessor {
   def isActive(state: State): Bool
   def isEntering(state: State): Bool
 
-  def goto(state: State): Unit
+  def goto(nextState: State, currentState: State): Unit
 
   def add(state: State): Int
   def add(stateMachine: StateMachineAccessor): Unit
 
-  def startFsm(): Unit
-  def exitFsm(): Unit
+  def startFsm(currentState: State): Unit
+  def exitFsm(currentState: State): Unit
   def wantExit(): Bool
 
   def disableAutoStart(): Unit

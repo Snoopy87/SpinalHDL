@@ -27,13 +27,11 @@ package spinal.lib.fsm
 
 
 import spinal.core._
+import spinal.core.internals._
 import spinal.lib._
+
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-
-
-
-
 
 
 class StateMachineEnum extends SpinalEnum
@@ -57,6 +55,17 @@ class StateMachineEnum extends SpinalEnum
   * }}}
   */
 class StateMachine extends Area with StateMachineAccessor with ScalaLocated {
+
+  // GUI
+  case class GUI_Transition(start: State, end: State, condition: Expression){
+    override def toString: String = s"${start} -> ${end}"
+  }
+  case class GUI_Info(
+                     transition: ArrayBuffer[GUI_Transition] = new ArrayBuffer[GUI_Transition]()
+                     )
+  //val gotoBuffer = new ArrayBuffer[String]()
+  val guiInfo = GUI_Info()
+
 
   var inGeneration = false
   val alwaysTasks  = ArrayBuffer[() => Unit]()
@@ -92,6 +101,7 @@ class StateMachine extends Area with StateMachineAccessor with ScalaLocated {
   def checkState(state: State) = assert(state.getStateMachineAccessor == this, s"A state machine ($this)is using a state ($state) that come from another state machine.\n\nState machine defined at ${this.getScalaLocationLong}\n State defined at ${state.getScalaLocationLong}")
 
   override def build(): Unit = {
+
     inGeneration = true
     childStateMachines.foreach(_.build())
     stateBoot = new StateBoot(autoStart).setName("boot")
@@ -154,6 +164,9 @@ class StateMachine extends Area with StateMachineAccessor with ScalaLocated {
 
     alwaysTasks.foreach(_())
     postBuildTasks.foreach(_())
+
+    // GUI
+    guiInfo.transition.foreach(println)
   }
 
   Component.current.addPrePopTask(() => {
@@ -169,9 +182,28 @@ class StateMachine extends Area with StateMachineAccessor with ScalaLocated {
 
   override def getEntry(): State = entryState
 
-  override def goto(state: State): Unit = {
+  override def goto(nextState: State, currentState: State = null): Unit = {
     assert(inGeneration, "You can't use the 'goto' function there. Maybe you should use an always{.. goto(x) ..} block ?")
-    stateNext := enumOf(state)
+    stateNext := enumOf(nextState)
+
+    // GUI
+
+    // Get the current scope
+    val currentScope = GlobalData.get.currentScope
+    var expression : Expression = null
+
+    currentScope.parentStatement match {
+      case x : WhenStatement if currentScope == x.whenTrue  =>
+//        println("-----> " + dispatchExpression(x.cond))
+        expression = x.cond
+      case x : WhenStatement if currentScope == x.whenFalse  =>
+//        println(dispatchExpression(x.cond))
+        expression = x.cond
+      case _ =>
+    }
+
+
+    guiInfo.transition += GUI_Transition(currentState, nextState, expression)
   }
 
   override def isActive(state: State): Bool = {
@@ -204,16 +236,16 @@ class StateMachine extends Area with StateMachineAccessor with ScalaLocated {
     stateMachine.setParentStateMachine(this)
   }
 
-  override def startFsm(): Unit = {
+  override def startFsm(currentState: State): Unit = {
     if(entryState == null)
       globalData.pendingErrors += (() => (s"$this as no entry point set. val yourState : State = new State with EntryPoint{...}   should solve the situation at \n${getScalaLocationLong}"))
     else
-      goto(entryState)
+      goto(entryState, currentState)
   }
 
-  override def exitFsm(): Unit = {
+  override def exitFsm(currentState: State): Unit = {
     wantExit := True
-    goto(stateBoot)
+    goto(stateBoot, currentState)
   }
 
   @dontName implicit val implicitFsm = this
@@ -227,4 +259,29 @@ class StateMachine extends Area with StateMachineAccessor with ScalaLocated {
 
   override def isStateNextBoot(): Bool = stateNext === enumOf(stateBoot)
   override def isStateRegBoot():  Bool = stateReg === enumOf(stateBoot)
+
+  // GUI WIP
+  private def dispatchExpression(e: Expression):  String = e match {
+
+    case  e: BaseType                                => s"${e.getName()}"
+
+    //bool
+    case  e: Operator.Bool.Equal                     => s"(${dispatchExpression(e.left)} == ${dispatchExpression(e.right)})"
+    case  e: Operator.Bool.NotEqual                  => s"(${dispatchExpression(e.left)} != ${dispatchExpression(e.right)})"
+
+    case  e: Operator.Bool.And                       => s"(${dispatchExpression(e.left)} & ${dispatchExpression(e.right)})"
+    case  e: Operator.Bool.Or                        => s"(${dispatchExpression(e.left)} | ${dispatchExpression(e.right)})"
+    case  e: Operator.Bool.Xor                       => s"(${dispatchExpression(e.left)} ^ ${dispatchExpression(e.right)})"
+
+    case _ => "???"
+  }
+
+  private def getNameElseThrows(e: BaseType): String = {
+    e.getName(null) match {
+      case null =>  throw new Exception("Internal error")
+      case name =>  name
+    }
+  }
+
+
 }

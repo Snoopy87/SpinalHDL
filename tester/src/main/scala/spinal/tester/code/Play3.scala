@@ -1455,12 +1455,19 @@ object PlayWithSM_GenDataForGUI {
     val io = new Bundle {
       val start = in  Bool
       val sel   = in  Bool
+      val init  = in  Bool
       val done  = out Bool
     }
 
     val sm = new StateMachine{
 
       io.done := False
+
+      always{
+        when(io.init){
+          goto(sS0)
+        }
+      }
 
       val sS0: State = new State with EntryPoint{
         whenIsActive{
@@ -1473,8 +1480,8 @@ object PlayWithSM_GenDataForGUI {
         whenIsActive{
           when(io.sel){
             goto(sS0)
-          } otherwise {
-            goto(sS2)
+          }otherwise {
+              goto(sS2)
           }
         }
       }
@@ -1489,5 +1496,13 @@ object PlayWithSM_GenDataForGUI {
 
   def main(args: Array[String]): Unit = {
     val report = SpinalVhdl(new Toplevel)
+
+
+
+    report.toplevel.sm.guiInfo.transition.foreach(println)
+
+    println("")
+
+
   }
 }
