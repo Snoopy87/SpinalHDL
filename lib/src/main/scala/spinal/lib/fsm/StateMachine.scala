@@ -32,56 +32,8 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 
-trait StateMachineAccessor {
-
-  def setEntry(state: State): Unit
-  def getEntry(): State
-
-  def isActive(state: State): Bool
-  def isEntering(state: State): Bool
-
-  def goto(state: State): Unit
-
-  def add(state: State): Int
-  def add(stateMachine: StateMachineAccessor): Unit
-
-  def startFsm(): Unit
-  def exitFsm(): Unit
-  def wantExit(): Bool
-
-  def disableAutoStart(): Unit
-
-  def getName(): String
-
-  def build(): Unit
-
-  def setParentStateMachine(parent: StateMachineAccessor): Unit
-
-  def cacheGet(key: Any): Option[Any]
-  def cachePut(key: Any, value: Any): Unit
-
-  def isStateNextBoot(): Bool
-  def isStateRegBoot(): Bool
-
-  def cacheGetOrElseUpdate(key: Any, op: => Any): Any = {
-    cacheGet(key) match{
-      case Some(value) => value
-      case None  =>
-        val value = op
-        cachePut(key,value)
-        value
-    }
-  }
-}
 
 
-class StateBoot(autoStart: Boolean)(implicit stateMachineAccessor: StateMachineAccessor) extends State {
-  if(autoStart) {
-    whenIsActive {
-      stateMachineAccessor.startFsm()
-    }
-  }
-}
 
 
 class StateMachineEnum extends SpinalEnum

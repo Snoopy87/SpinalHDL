@@ -230,3 +230,12 @@ class StateDelay(cyclesCount: UInt)(implicit stateMachineAccessor: StateMachineA
     }
   }
 }
+
+
+class StateBoot(autoStart: Boolean)(implicit stateMachineAccessor: StateMachineAccessor) extends State {
+  if(autoStart) {
+    whenIsActive {
+      stateMachineAccessor.startFsm()
+    }
+  }
+}

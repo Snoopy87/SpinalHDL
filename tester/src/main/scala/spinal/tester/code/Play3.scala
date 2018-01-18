@@ -1447,3 +1447,47 @@ object PlayWithBlackBoxStdLogic{
 
   }
 }
+
+
+object PlayWithSM_GenDataForGUI {
+
+  class Toplevel extends Component {
+    val io = new Bundle {
+      val start = in  Bool
+      val sel   = in  Bool
+      val done  = out Bool
+    }
+
+    val sm = new StateMachine{
+
+      io.done := False
+
+      val sS0: State = new State with EntryPoint{
+        whenIsActive{
+          when(io.start & io.sel){
+            goto(sS1)
+          }
+        }
+      }
+      val sS1: State = new State{
+        whenIsActive{
+          when(io.sel){
+            goto(sS0)
+          } otherwise {
+            goto(sS2)
+          }
+        }
+      }
+      val sS2: State = new State{
+        whenIsActive{
+          io.done := True
+          goto(sS0)
+        }
+      }
+    }
+  }
+
+  def main(args: Array[String]): Unit = {
+    val report = SpinalVhdl(new Toplevel)
+  }
+}
