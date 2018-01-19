@@ -23,9 +23,10 @@
 ** OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR  **
 ** THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                **
 \*                                                                           */
-package spinal.lib.fsm
+package spinal.lib.fsm.example
 
 import spinal.core._
+import spinal.lib.fsm._
 
 
 object StateMachineStyle1 {
@@ -60,7 +61,9 @@ object StateMachineStyle1 {
   }
 
   def main(args: Array[String]) {
-    SpinalVhdl(new TopLevel)
+    val report = SpinalVhdl(new TopLevel)
+    report.toplevel.fsm.emitMetaData()
+
   }
 }
 
@@ -100,7 +103,8 @@ object StateMachineStyle2 {
   }
 
   def main(args: Array[String]) {
-    SpinalVhdl(new TopLevel)
+    val report = SpinalVhdl(new TopLevel)
+    report.toplevel.fsm.emitMetaData()
   }
 }
 
@@ -136,7 +140,8 @@ object StateMachineStyle3 {
   }
 
   def main(args: Array[String]) {
-    SpinalVhdl(new TopLevel)
+    val report = SpinalVhdl(new TopLevel)
+    report.toplevel.fsm.emitMetaData()
   }
 }
 
@@ -192,7 +197,8 @@ object StateMachineSimpleExample {
   }
 
   def main(args: Array[String]) {
-    SpinalVhdl(new TopLevel)
+    val report = SpinalVhdl(new TopLevel)
+    report.toplevel.fsm.emitMetaData()
   }
 }
 
@@ -291,7 +297,8 @@ object StateMachineWithInnerExample {
   }
 
   def main(args: Array[String]) {
-    SpinalVhdl(new TopLevel)
+    val report = SpinalVhdl(new TopLevel)
+    report.toplevel.coreFsm.emitMetaData()
   }
 }
 
@@ -300,10 +307,14 @@ object StateMachineTryExample {
 
   class TopLevel extends Component {
 
+    val io = new Bundle{
+      val counter = out UInt(8 bits)
+    }
+
     val fsm = new StateMachine {
       val counter = Reg(UInt(8 bits)) init (0)
 
-      val stateA: State = new State {
+      val stateA: State = new State with EntryPoint {
         whenIsActive {
           goto(stateB)
         }
@@ -315,16 +326,19 @@ object StateMachineTryExample {
       }
       val stateC: State = new State {
         whenIsActive {
-          goto(stateA)
+
           counter := counter + 1
+          goto(stateA)
         }
       }
     }
-    fsm.counter.keep
+   // fsm.counter.keep
+    io.counter := fsm.counter
   }
 
   def main(args: Array[String]) {
-    SpinalVhdl(new TopLevel)
+    val report = SpinalVhdl(new TopLevel)
+  //  report.toplevel.fsm.emitMetaData()
   }
 }
 
@@ -373,11 +387,12 @@ object StateMachineTry2Example {
         }
       }
     }
-    fsm.stateReg.keep()
+    //fsm.stateReg.keep()
   }
 
   def main(args: Array[String]) {
-    SpinalVhdl(new TopLevel)
+    val report = SpinalVhdl(new TopLevel)
+    report.toplevel.fsm.emitMetaData()
   }
 }
 
@@ -439,7 +454,8 @@ object StateMachineTry3Example {
   }
 
   def main(args: Array[String]) {
-    SpinalVhdl(new TopLevel)
+    val report = SpinalVhdl(new TopLevel)
+    //report.toplevel.fsm.emitMetaData()
   }
 }
 

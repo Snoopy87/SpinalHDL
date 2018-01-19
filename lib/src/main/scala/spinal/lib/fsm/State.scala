@@ -101,7 +101,7 @@ class State(implicit stateMachineAccessor: StateMachineAccessor) extends Area wi
 
   def innerFsm(that: => StateMachine): Unit = innerFsm += that
 
-  def exit(): Unit = stateMachineAccessor.exitFsm(null)
+  def exit(): Unit = stateMachineAccessor.exitFsm(this)
 
   def getStateMachineAccessor() = stateMachineAccessor
 
@@ -232,7 +232,7 @@ class StateDelay(cyclesCount: UInt)(implicit stateMachineAccessor: StateMachineA
 }
 
 
-class StateBoot(autoStart: Boolean)(implicit stateMachineAccessor: StateMachineAccessor) extends State {
+class StateBoot(val autoStart: Boolean)(implicit stateMachineAccessor: StateMachineAccessor) extends State {
   if(autoStart) {
     whenIsActive {
       stateMachineAccessor.startFsm(this)

@@ -27,6 +27,7 @@ package spinal.lib.fsm
 
 import spinal.core._
 
+
 trait StateMachineAccessor {
 
   def setEntry(state: State): Unit
@@ -67,5 +68,7 @@ trait StateMachineAccessor {
         value
     }
   }
+
+  def getStateMachine(): StateMachine
 }
 

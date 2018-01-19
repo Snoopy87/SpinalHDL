@@ -29,6 +29,7 @@ package spinal.lib.fsm
 import spinal.core._
 import spinal.core.internals._
 import spinal.lib._
+import spinal.lib.fsm.emiter.{FSMEmiterDot, FSMEmiterInfo, FSMEmiterTransition}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -56,26 +57,13 @@ class StateMachineEnum extends SpinalEnum
   */
 class StateMachine extends Area with StateMachineAccessor with ScalaLocated {
 
-  // GUI
-  case class GUI_Transition(start: State, end: State, scope: ScopeStatement){
+  // Emiter FSM information
+  val fsmEmiterInfo = FSMEmiterInfo()
 
-    def condition : String = {
-        scope.parentStatement match{
-          case x : WhenStatement if scope == x.whenTrue  => dispatchExpression(x.cond)
-          case x : WhenStatement if scope == x.whenFalse => s"!(${dispatchExpression(x.cond)})"
-          case _ => " ?? "
-        }
-    }
-
-
-    override def toString: String = s"${start} - ${condition}-> ${end}"
+  def emitMetaData(fileName: String = "default.dot"): Unit = {
+    val emiter = new FSMEmiterDot(this, fsmEmiterInfo)
+    emiter.emitFSM()
   }
-  case class GUI_Info(
-                     transition: ArrayBuffer[GUI_Transition] = new ArrayBuffer[GUI_Transition]()
-                     )
-  //val gotoBuffer = new ArrayBuffer[String]()
-  val guiInfo = GUI_Info()
-
 
   var inGeneration = false
   val alwaysTasks  = ArrayBuffer[() => Unit]()
@@ -174,9 +162,6 @@ class StateMachine extends Area with StateMachineAccessor with ScalaLocated {
 
     alwaysTasks.foreach(_())
     postBuildTasks.foreach(_())
-
-    // GUI
-    guiInfo.transition.foreach(println)
   }
 
   Component.current.addPrePopTask(() => {
@@ -196,24 +181,8 @@ class StateMachine extends Area with StateMachineAccessor with ScalaLocated {
     assert(inGeneration, "You can't use the 'goto' function there. Maybe you should use an always{.. goto(x) ..} block ?")
     stateNext := enumOf(nextState)
 
-    // GUI
-
-    // Get the current scope
-    val currentScope = GlobalData.get.currentScope
-//    var expression : Expression = null
-//
-//    currentScope.parentStatement match {
-//      case x : WhenStatement if currentScope == x.whenTrue  =>
-////        println("-----> " + dispatchExpression(x.cond))
-//        expression = x.cond
-//      case x : WhenStatement if currentScope == x.whenFalse  =>
-////        println(dispatchExpression(x.cond))
-//        expression = x.cond
-//      case _ =>
-//    }
-
-
-    guiInfo.transition += GUI_Transition(currentState, nextState, currentScope)
+    // Store information for fsm emiter
+   fsmEmiterInfo.transition += FSMEmiterTransition(currentState, nextState, GlobalData.get.currentScope)
   }
 
   override def isActive(state: State): Bool = {
@@ -270,28 +239,6 @@ class StateMachine extends Area with StateMachineAccessor with ScalaLocated {
   override def isStateNextBoot(): Bool = stateNext === enumOf(stateBoot)
   override def isStateRegBoot():  Bool = stateReg === enumOf(stateBoot)
 
-  // GUI WIP
-  def dispatchExpression(e: Expression):  String = e match {
 
-    case  e: BaseType                                => s"${e.getName()}"
-
-    //bool
-    case  e: Operator.Bool.Equal                     => s"(${dispatchExpression(e.left)} == ${dispatchExpression(e.right)})"
-    case  e: Operator.Bool.NotEqual                  => s"(${dispatchExpression(e.left)} != ${dispatchExpression(e.right)})"
-
-    case  e: Operator.Bool.And                       => s"(${dispatchExpression(e.left)} & ${dispatchExpression(e.right)})"
-    case  e: Operator.Bool.Or                        => s"(${dispatchExpression(e.left)} | ${dispatchExpression(e.right)})"
-    case  e: Operator.Bool.Xor                       => s"(${dispatchExpression(e.left)} ^ ${dispatchExpression(e.right)})"
-
-    case _ => "???"
-  }
-
-  private def getNameElseThrows(e: BaseType): String = {
-    e.getName(null) match {
-      case null =>  throw new Exception("Internal error")
-      case name =>  name
-    }
-  }
-
-
+  override def getStateMachine(): StateMachine = this
 }

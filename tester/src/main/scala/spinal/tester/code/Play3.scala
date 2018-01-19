@@ -1453,10 +1453,12 @@ object PlayWithSM_GenDataForGUI {
 
   class Toplevel extends Component {
     val io = new Bundle {
-      val start = in  Bool
-      val sel   = in  Bool
-      val init  = in  Bool
-      val done  = out Bool
+      val start    = in  Bool
+      val sel      = in  Bool
+      val toto     = in Bool
+      val init     = in  Bool
+      val done     = out Bool
+      val selState = in UInt(2 bits)
     }
 
     val sm = new StateMachine{
@@ -1480,6 +1482,8 @@ object PlayWithSM_GenDataForGUI {
         whenIsActive{
           when(io.sel){
             goto(sS0)
+          } elsewhen (io.toto){
+            goto(sS4)
           }otherwise {
               goto(sS2)
           }
@@ -1488,35 +1492,36 @@ object PlayWithSM_GenDataForGUI {
       val sS2: State = new State{
         whenIsActive{
           io.done := True
-          goto(sS0)
+          goto(sS3)
+        }
+      }
+      val sS3: State = new StateDelay(10){
+        whenCompleted{goto(sS0)}
+      }
+      val sS4: State = new State{
+        whenIsActive{
+          switch(io.selState){
+            is(0){goto(sS0)}
+            is(1){goto(sS1)}
+            is(2){goto(sS2)}
+            is(3){goto(sS5)}
+          }
+        }
+      }
+      val sS5: State = new State{
+        whenIsActive{
+//          goto(sS0)
         }
       }
     }
   }
 
   def main(args: Array[String]): Unit = {
+
     val report = SpinalVhdl(new Toplevel)
 
-    import spinal.core.internals.WhenStatement
+    println("----\n" * 2)
 
-    println("\n" * 2)
-
-
-    report.toplevel.sm.guiInfo.transition.foreach(println)
-
-//    println("hgkkhhj")
-//
-//    report.toplevel.sm.guiInfo.transition.foreach{ case trans =>
-//      println(trans)
-//        trans.scope.parentStatement match{
-//          case x : WhenStatement => println(report.toplevel.sm.dispatchExpression(x.cond))
-//                case _ =>
-//        }
-//
-//    }
-
-
-
-
+    report.toplevel.sm.emitMetaData()
   }
 }
