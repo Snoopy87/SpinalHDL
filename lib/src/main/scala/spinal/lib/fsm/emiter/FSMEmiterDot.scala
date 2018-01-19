@@ -6,6 +6,8 @@ import spinal.lib.fsm._
 
 class FSMEmiterDot(fsm: StateMachine, info: FSMEmiterInfo) extends FSMEmiter {
 
+  override def currentFsm: StateMachine = fsm
+
   def emitFSM(nameFile: String = s"${fsm.getName()}.dot"): Unit = {
 
     def tab = " " * 4
@@ -20,24 +22,29 @@ class FSMEmiterDot(fsm: StateMachine, info: FSMEmiterInfo) extends FSMEmiter {
 
     val bufferStr    = new StringBuilder()
     bufferStr ++= s"digraph ${fsm.getName()}{\n"
+    bufferStr ++= s"${tab}node [style=filled];"
     bufferStr ++= s"${transitionStr.map(trans => s"${tab}${trans}").mkString("\n")} \n"
+    bufferStr ++= s"${tab}${"\"" + "State" + "\""} \n"
 
     if(fsm.stateBoot.isInstanceOf[StateBoot]){
       val bootState = fsm.stateBoot.asInstanceOf[StateBoot]
       if(bootState.autoStart)
-        bufferStr ++= s"${tab}${getNameState(bootState)} [shape=triangle]; \n"
+        bufferStr ++= s"${tab}${getNameState(bootState)} [shape=invtriangle, style=filled, fillcolor=red]; \n"
     }
 
     if(fillStateFSM.nonEmpty){
       bufferStr ++=  s"${fillStateFSM.map(state => s"${tab}${state}").mkString("\n")} \n"
+      bufferStr ++= s"${tab}${"\"" + "Inner FSM" + "\""} [shape=rectangle, style=${"\"" + "rounded, filled" + "\"" }, fillcolor=yellow];\n"
     }
 
     if(fillStatePara.nonEmpty){
       bufferStr ++= s"${fillStatePara.map(state => s"${tab}${state}").mkString("\n")} \n"
+      bufferStr ++= s"${tab}${"\"" + "Parallel FSM" + "\""} [shape=rectangle, style=${"\"" + "rounded, filled" + "\"" }, fillcolor=chartreuse];\n"
     }
 
     if(fillStateDelay.nonEmpty){
       bufferStr ++= s"${fillStateDelay.map(state => s"${tab}${state}").mkString("\n")} \n"
+      bufferStr ++= s"${tab}${"\"" + "Delay State" + "\""} [style=${"\"" + "filled" + "\""}, fillcolor=chocolate1];\n"
     }
 
     bufferStr ++= "}"
@@ -52,8 +59,4 @@ class FSMEmiterDot(fsm: StateMachine, info: FSMEmiterInfo) extends FSMEmiter {
     bw.write(bufferStr.toString())
     bw.close()
   }
-
-
-
-
 }

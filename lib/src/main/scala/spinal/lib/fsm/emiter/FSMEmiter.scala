@@ -16,14 +16,21 @@ case class FSMEmiterInfo(
 
 abstract class FSMEmiter {
 
+  def currentFsm: StateMachine
+
+  def idToBits[T <: SpinalEnum](enum: SpinalEnumElement[T], encoding: SpinalEnumEncoding): String = {
+    val str = encoding.getValue(enum).toString(2)
+    ("0" * (encoding.getWidth(enum.spinalEnum) - str.length)) + str
+  }
+
   def getNameState(state: State): String = {
 
     val name = state match{
-      case s: StateDelay         => s"${s.getName()}_delay"
+      case s: StateDelay         => s"${s.getName()}" // _${idToBits(currentFsm.enumOf(s), currentFsm.enumDefinition.defaultEncoding)}"
       case s: StateBoot          => if(s.autoStart) "boot" else "exit"
-      case s: StateParallelFsm   => s"${s.getName()}_//"
-      case s: StateFsm[_]        => s"${s.getName()}_fsm"
-      case s: State              => s.getName()
+      case s: StateParallelFsm   => s"${s.getName()}" //_${idToBits(currentFsm.enumOf(s), currentFsm.enumDefinition.defaultEncoding)}"
+      case s: StateFsm[_]        => s"${s.getName()}" //_${idToBits(currentFsm.enumOf(s), currentFsm.enumDefinition.defaultEncoding)}"
+      case s: State              => s"${s.getName()}" //_${idToBits(currentFsm.enumOf(s), currentFsm.enumDefinition.defaultEncoding)}"
       case _                     => "always"
     }
 
@@ -33,17 +40,34 @@ abstract class FSMEmiter {
 
   def getConditionStrFromScope(scope: ScopeStatement): String = {
     scope.parentStatement match{
-      case x: WhenStatement if scope == x.whenTrue  => dispatchExpression(x.cond)
-      case x: WhenStatement if scope == x.whenFalse => s"!(${dispatchExpression(x.cond)})"
-      case x: SwitchStatement if x.parentScope.parentStatement != null =>
+
+      case x: WhenStatement if scope == x.whenTrue  =>
+        if(x.parentScope.parentStatement == null)
+          s"${dispatchExpression(x.cond)}"
+        else
+          s"(${dispatchExpression(x.cond)} & ${getConditionStrFromScope(x.parentScope)})"
+
+      case x: WhenStatement if scope == x.whenFalse =>
+        if(x.parentScope.parentStatement == null)
+          s"!(${dispatchExpression(x.cond)})"
+        else
+          s"(!(${dispatchExpression(x.cond)}) & ${getConditionStrFromScope(x.parentScope)})"
+
+      case x: SwitchStatement  =>
         val element = x.elements.filter(elem => elem.scopeStatement == scope)
         val cond = if(element.isEmpty) s"default" else s"${dispatchExpression(element.head.keys.head)}"
-        s"${dispatchExpression(x.value)} / $cond"
-      case _ => ""
+        if (x.parentScope.parentStatement == null){
+          s"${dispatchExpression(x.value)} == $cond"
+        }else{
+          s"(${dispatchExpression(x.value)} == $cond & ${getConditionStrFromScope(x.parentScope)})"
+        }
+
+
+      case _ => "ici"
     }
   }
 
-  def dispatchExpression(e: Expression):  String = e match {
+  def dispatchExpression(e: Expression): String = e match {
     case  e: BaseType                                => s"${e.getName()}"
 
     case  e: BoolLiteral                             => s"${e.value}"

@@ -218,6 +218,7 @@ class StateDelay(cyclesCount: UInt)(implicit stateMachineAccessor: StateMachineA
 
   val cache = stateMachineAccessor.cacheGetOrElseUpdate(StateMachineSharableUIntKey, new StateMachineSharableRegUInt).asInstanceOf[StateMachineSharableRegUInt]
   cache.addMinWidth(cyclesCount.getWidth)
+  cache.value.setName("cnt", true)
 
   onEntry{
     cache.value := cyclesCount
@@ -232,6 +233,9 @@ class StateDelay(cyclesCount: UInt)(implicit stateMachineAccessor: StateMachineA
 }
 
 
+/**
+  * First state of a state machine
+  */
 class StateBoot(val autoStart: Boolean)(implicit stateMachineAccessor: StateMachineAccessor) extends State {
   if(autoStart) {
     whenIsActive {

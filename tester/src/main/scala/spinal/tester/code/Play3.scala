@@ -1504,7 +1504,11 @@ object PlayWithSM_GenDataForGUI {
             is(0){goto(sS0)}
             is(1){goto(sS1)}
             is(2){goto(sS2)}
-            is(3){goto(sS5)}
+            is(3){
+              when(io.sel) {
+                goto(sS5)
+              }
+            }
           }
         }
       }
