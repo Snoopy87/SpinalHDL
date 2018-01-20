@@ -29,7 +29,7 @@ package spinal.lib.fsm
 import spinal.core._
 import spinal.core.internals._
 import spinal.lib._
-import spinal.lib.fsm.emiter.{FSMEmiterDot, FSMEmiterInfo, FSMEmiterTransition}
+import spinal.lib.fsm.emiter._
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -59,11 +59,6 @@ class StateMachine extends Area with StateMachineAccessor with ScalaLocated {
 
   // Emiter FSM information
   val fsmEmiterInfo = FSMEmiterInfo()
-
-  def emitMetaData(fileName: String = "default.dot"): Unit = {
-    val emiter = new FSMEmiterDot(this, fsmEmiterInfo)
-    emiter.emitFSM()
-  }
 
   var inGeneration = false
   val alwaysTasks  = ArrayBuffer[() => Unit]()
@@ -240,5 +235,5 @@ class StateMachine extends Area with StateMachineAccessor with ScalaLocated {
   override def isStateRegBoot():  Bool = stateReg === enumOf(stateBoot)
 
 
-  override def getStateMachine(): StateMachine = this
+  override def getFSM(): StateMachine = this
 }

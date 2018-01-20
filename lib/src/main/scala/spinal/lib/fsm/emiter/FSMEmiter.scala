@@ -6,31 +6,55 @@ import spinal.lib.fsm._
 
 import scala.collection.mutable.ArrayBuffer
 
-case class FSMEmiterTransition(start: State, end: State, scope: ScopeStatement){
-  override def toString: String = s"${start} ---> ${end}"
-}
+
+case class FSMEmiterTransition(start: State, end: State, scope: ScopeStatement){}
+
 case class FSMEmiterInfo(
   transition: ArrayBuffer[FSMEmiterTransition] = new ArrayBuffer[FSMEmiterTransition]()
 )
 
 
-abstract class FSMEmiter {
+trait FSMEmiterTag
 
-  def currentFsm: StateMachine
 
-  def idToBits[T <: SpinalEnum](enum: SpinalEnumElement[T], encoding: SpinalEnumEncoding): String = {
-    val str = encoding.getValue(enum).toString(2)
-    ("0" * (encoding.getWidth(enum.spinalEnum) - str.length)) + str
+case class FsmEmiterConfig(
+  mode     : FSMEmiterTag,
+  nameFile : String = null,
+  emitEncodingState: Boolean = true
+){
+  def generate[T <: StateMachine](fsm: T): Unit = {
+    mode match {
+      case DotFsm =>
+        val emiter = new FSMEmiterDot(this)(fsm)
+        emiter.emitFSM()
+      case _ => ???
+    }
   }
+}
 
-  def getNameState(state: State): String = {
+
+
+abstract class FSMEmiter(config: FsmEmiterConfig){
+
+  def getStateName(state: State): String = {
+
+    def getEncoding(s: State): String = {
+      val currentFsm     = state.getStateMachineAccessor().getFSM()
+      val binaryEncoding = idToBits(currentFsm.enumOf(state), currentFsm.enumDefinition.defaultEncoding)
+      return if(config.emitEncodingState) s"_${binaryEncoding}" else ""
+    }
+
+    def idToBits[T <: SpinalEnum](enum: SpinalEnumElement[T], encoding: SpinalEnumEncoding): String = {
+      val str = encoding.getValue(enum).toString(2)
+      ("0" * (encoding.getWidth(enum.spinalEnum) - str.length)) + str
+    }
 
     val name = state match{
-      case s: StateDelay         => s"${s.getName()}" // _${idToBits(currentFsm.enumOf(s), currentFsm.enumDefinition.defaultEncoding)}"
+      case s: StateDelay         => s"${s.getName()}${getEncoding(s)}"
       case s: StateBoot          => if(s.autoStart) "boot" else "exit"
-      case s: StateParallelFsm   => s"${s.getName()}" //_${idToBits(currentFsm.enumOf(s), currentFsm.enumDefinition.defaultEncoding)}"
-      case s: StateFsm[_]        => s"${s.getName()}" //_${idToBits(currentFsm.enumOf(s), currentFsm.enumDefinition.defaultEncoding)}"
-      case s: State              => s"${s.getName()}" //_${idToBits(currentFsm.enumOf(s), currentFsm.enumDefinition.defaultEncoding)}"
+      case s: StateParallelFsm   => s"${s.getName()}${getEncoding(s)}"
+      case s: StateFsm[_]        => s"${s.getName()}${getEncoding(s)}"
+      case s: State              => s"${s.getName()}${getEncoding(s)}"
       case _                     => "always"
     }
 
@@ -62,8 +86,7 @@ abstract class FSMEmiter {
           s"(${dispatchExpression(x.value)} == $cond & ${getConditionStrFromScope(x.parentScope)})"
         }
 
-
-      case _ => "ici"
+      case _ => ???
     }
   }
 

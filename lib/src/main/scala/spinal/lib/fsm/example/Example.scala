@@ -27,6 +27,7 @@ package spinal.lib.fsm.example
 
 import spinal.core._
 import spinal.lib.fsm._
+import spinal.lib.fsm.emiter.{DotFsm, FsmEmiterConfig}
 
 
 object StateMachineStyle1 {
@@ -62,8 +63,7 @@ object StateMachineStyle1 {
 
   def main(args: Array[String]) {
     val report = SpinalVhdl(new TopLevel)
-    report.toplevel.fsm.emitMetaData()
-
+    FsmEmiterConfig(mode = DotFsm).generate(report.toplevel.fsm)
   }
 }
 
@@ -104,7 +104,7 @@ object StateMachineStyle2 {
 
   def main(args: Array[String]) {
     val report = SpinalVhdl(new TopLevel)
-    report.toplevel.fsm.emitMetaData()
+    FsmEmiterConfig(mode = DotFsm).generate(report.toplevel.fsm)
   }
 }
 
@@ -141,7 +141,7 @@ object StateMachineStyle3 {
 
   def main(args: Array[String]) {
     val report = SpinalVhdl(new TopLevel)
-    report.toplevel.fsm.emitMetaData()
+    FsmEmiterConfig(mode = DotFsm).generate(report.toplevel.fsm)
   }
 }
 
@@ -198,7 +198,7 @@ object StateMachineSimpleExample {
 
   def main(args: Array[String]) {
     val report = SpinalVhdl(new TopLevel)
-    report.toplevel.fsm.emitMetaData()
+    FsmEmiterConfig(mode = DotFsm).generate(report.toplevel.fsm)
   }
 }
 
@@ -298,7 +298,7 @@ object StateMachineWithInnerExample {
 
   def main(args: Array[String]) {
     val report = SpinalVhdl(new TopLevel)
-    report.toplevel.coreFsm.emitMetaData()
+    FsmEmiterConfig(mode = DotFsm).generate(report.toplevel.coreFsm)
   }
 }
 
@@ -392,7 +392,7 @@ object StateMachineTry2Example {
 
   def main(args: Array[String]) {
     val report = SpinalVhdl(new TopLevel)
-    report.toplevel.fsm.emitMetaData()
+    FsmEmiterConfig(mode = DotFsm).generate(report.toplevel.fsm)
   }
 }
 

@@ -12,7 +12,7 @@ import spinal.lib.memory.sdram.W9825G6JH6
 import spinal.lib.soc.pinsec.{Pinsec, PinsecConfig}
 import spinal.tester.code.t8_a.UartCtrl
 import spinal.lib.fsm._
-
+import spinal.lib.fsm.emiter.{DotFsm, FsmEmiterConfig}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -1467,11 +1467,11 @@ object PlayWithSM_GenDataForGUI {
 
       always{
         when(io.init){
-          goto(sS0)
+          goto(sS00)
         }
       }
 
-      val sS0: State = new State with EntryPoint{
+      val sS00: State = new State with EntryPoint{
         whenIsActive{
           when(io.start & io.sel){
             goto(sS1)
@@ -1481,7 +1481,7 @@ object PlayWithSM_GenDataForGUI {
       val sS1: State = new State{
         whenIsActive{
           when(io.sel){
-            goto(sS0)
+            goto(sS00)
           } elsewhen (io.toto){
             goto(sS4)
           }otherwise {
@@ -1496,12 +1496,12 @@ object PlayWithSM_GenDataForGUI {
         }
       }
       val sS3: State = new StateDelay(10){
-        whenCompleted{goto(sS0)}
+        whenCompleted{goto(sS00)}
       }
       val sS4: State = new State{
         whenIsActive{
           switch(io.selState){
-            is(0){goto(sS0)}
+            is(0){goto(sS00)}
             is(1){goto(sS1)}
             is(2){goto(sS2)}
             is(3){
@@ -1514,7 +1514,7 @@ object PlayWithSM_GenDataForGUI {
       }
       val sS5: State = new State{
         whenIsActive{
-//          goto(sS0)
+          goto(sS00)
         }
       }
     }
@@ -1526,6 +1526,13 @@ object PlayWithSM_GenDataForGUI {
 
     println("----\n" * 2)
 
-    report.toplevel.sm.emitMetaData()
+//    report.toplevel.sm.emitMetaData(DotFsm)
+
+    FsmEmiterConfig(
+      mode     = DotFsm,
+      nameFile = "Toplevel_sm",
+      emitEncodingState = true
+    ).generate(report.toplevel.sm)
+
   }
 }

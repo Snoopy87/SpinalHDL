@@ -69,6 +69,6 @@ trait StateMachineAccessor {
     }
   }
 
-  def getStateMachine(): StateMachine
+  def getFSM(): StateMachine
 }
 
