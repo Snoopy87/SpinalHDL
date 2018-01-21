@@ -18,9 +18,10 @@ trait FSMEmiterTag
 
 
 case class FsmEmiterConfig(
-  mode     : FSMEmiterTag,
-  nameFile : String = null,
-  emitEncodingState: Boolean = true
+  mode              : FSMEmiterTag,
+  nameFile          : String = null,
+  emitEncodingState : Boolean = true,
+  genDotImage       : Boolean = false
 ){
   def generate[T <: StateMachine](fsm: T): Unit = {
     mode match {

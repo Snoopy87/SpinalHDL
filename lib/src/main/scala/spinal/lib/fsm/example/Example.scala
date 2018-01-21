@@ -298,7 +298,9 @@ object StateMachineWithInnerExample {
 
   def main(args: Array[String]) {
     val report = SpinalVhdl(new TopLevel)
-    FsmEmiterConfig(mode = DotFsm).generate(report.toplevel.coreFsm)
+    FsmEmiterConfig(
+      mode = DotFsm,
+      genDotImage = true).generate(report.toplevel.coreFsm)
   }
 }
 

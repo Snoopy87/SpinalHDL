@@ -1531,7 +1531,8 @@ object PlayWithSM_GenDataForGUI {
     FsmEmiterConfig(
       mode     = DotFsm,
       nameFile = "Toplevel_sm",
-      emitEncodingState = true
+      emitEncodingState = true,
+      genDotImage = true
     ).generate(report.toplevel.sm)
 
   }

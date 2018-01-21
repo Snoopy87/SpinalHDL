@@ -5,6 +5,8 @@ import java.io.{BufferedWriter, File, FileWriter}
 import spinal.core.SpinalInfo
 import spinal.lib.fsm._
 
+import scala.sys.process.Process
+
 
 object DotFsm extends FSMEmiterTag
 
@@ -64,6 +66,14 @@ class FSMEmiterDot(config: FsmEmiterConfig)(fsm: StateMachine) extends FSMEmiter
     val bw = new BufferedWriter(new FileWriter(dotFile))
     bw.write(bufferStr.toString())
     bw.close()
+
+    // Create a image for the current state mchaine
+    if(config.genDotImage){
+      SpinalInfo(s"Generate a png dot graph : ${fileName}.png")
+      val cmd = s"dot -T png -O ${dotFile.getName}"
+      Process(cmd) !
+    }
+
 
     SpinalInfo(s"Generate dot graph into file : ${dotFile.getName}")
   }
