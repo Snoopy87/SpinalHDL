@@ -119,7 +119,7 @@ case class SpiSlaveCtrl(generics : SpiSlaveCtrlGenerics) extends Component{
     when(normalizedSclkEdges.rise){
       buffer := (buffer ## spi.mosi).resized
     }
-    when(normalizedSclkEdges.toogle){
+    when(normalizedSclkEdges.toggle){
       counter.increment()
     }
   }
