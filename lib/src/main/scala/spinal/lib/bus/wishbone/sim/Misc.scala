@@ -1,10 +1,11 @@
-package spinal.lib.wishbone.sim
+package spinal.lib.bus.wishbone.sim
 
-import scala.util.Random
-import scala.collection.immutable._
 import spinal.core.sim._
-import spinal.lib.bus.wishbone._
 import spinal.lib.bus.misc._
+import spinal.lib.bus.wishbone._
+
+import scala.collection.immutable._
+import scala.util.Random
 
 object WishboneStatus{
   def apply(bus: Wishbone) = new WishboneStatus(bus)

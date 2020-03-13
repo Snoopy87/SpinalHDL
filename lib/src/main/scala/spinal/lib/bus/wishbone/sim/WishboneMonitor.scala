@@ -1,9 +1,9 @@
-package spinal.lib.wishbone.sim
+package spinal.lib.bus.wishbone.sim
 
-import spinal.sim._
 import spinal.core._
 import spinal.core.sim._
 import spinal.lib.bus.wishbone._
+
 import scala.collection.mutable._
 
 object WishboneMonitor{

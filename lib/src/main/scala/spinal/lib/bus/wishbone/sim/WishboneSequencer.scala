@@ -1,7 +1,6 @@
-package spinal.lib.wishbone.sim
+package spinal.lib.bus.wishbone.sim
 
 import scala.collection.immutable._
-import spinal.lib.bus.misc._
 
 object WishboneSequencer{
   def apply(builder: => Seq[WishboneTransaction]) = new WishboneSequencer(builder)

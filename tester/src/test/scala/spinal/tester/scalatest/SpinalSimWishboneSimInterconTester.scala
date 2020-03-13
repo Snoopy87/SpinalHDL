@@ -8,8 +8,10 @@ import spinal.sim._
 import spinal.lib._
 import spinal.lib.bus.misc._
 import spinal.lib.bus.wishbone._
-import spinal.lib.wishbone.sim._
+import spinal.lib.bus.wishbone.sim.{WishboneDriver, WishboneTransaction}
+import spinal.lib.bus.wishbone.sim._
 import spinal.lib.sim._
+
 import scala.util.Random
 
 class WishboneInterconComponent(config : WishboneConfig,n_masters: Int,decodings : Seq[SizeMapping]) extends Component{
